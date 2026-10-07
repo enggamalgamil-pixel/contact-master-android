@@ -1,0 +1,8 @@
+{
+  "appId": "com.contactmaster.pro",
+  "appName": "Contact Master Pro",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": { "allowMixedContent": true },
+  "plugins": { "Contacts": { "androidPermission": true } }
+}

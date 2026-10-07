@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contact Master Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
+body{background:#f4f6fb;color:#141a2e;line-height:1.6;padding-bottom:80px}
+header{background:#fff;border-bottom:1px solid #e1e6f2;padding:14px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#4f6ef7,#8b5cf6);color:#fff;display:grid;place-items:center;font-weight:800}
+h1{font-size:16px;font-weight:800}
+main{max-width:900px;margin:0 auto;padding:14px}
+.card{background:#fff;border:1px solid #e1e6f2;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(20,30,80,.05)}
+.card h2{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#eef1f9;color:#141a2e;transition:.2s;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn:hover{background:#e3e8f5}
+.btn.primary{background:#4f6ef7;color:#fff}
+.btn.primary:hover{background:#3d5ce5}
+.btn.success{background:#30a46c;color:#fff}
+.btn.danger{background:#e5484d;color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+input,select{padding:9px 12px;border:1px solid #e1e6f2;border-radius:8px;background:#eef1f9;font-size:14px;outline:none;font-family:inherit}
+input:focus,select:focus{border-color:#4f6ef7;background:#fff}
+.list{display:flex;flex-direction:column;gap:6px}
+.item{display:flex;align-items:center;gap:12px;padding:11px;background:#fff;border:1px solid #e1e6f2;border-radius:10px}
+.item:hover{border-color:#4f6ef7;background:#e8ecfe}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#4f6ef7,#8b5cf6);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;overflow:hidden;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.nm{font-weight:700;font-size:14px}
+.meta{font-size:12px;color:#6b7394;display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+.acts{display:flex;gap:4px}
+.acts button{width:34px;height:34px;border-radius:8px;border:none;background:#eef1f9;cursor:pointer;font-size:14px}
+.acts button:hover{background:#e3e8f5}
+.empty{text-align:center;padding:50px 20px;color:#6b7394}
+.empty .ic{font-size:52px;margin-bottom:10px;opacity:.5}
+.badge{display:inline-flex;padding:3px 9px;font-size:11px;font-weight:700;border-radius:20px;background:#e8ecfe;color:#4f6ef7}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.stat{background:#fff;border:1px solid #e1e6f2;border-radius:12px;padding:14px}
+.stat .n{font-size:22px;font-weight:800;margin-top:4px}
+.stat.p .n{color:#4f6ef7}
+.stat.s .n{color:#30a46c}
+.stat.d .n{color:#e5484d}
+.overlay{position:fixed;inset:0;background:rgba(10,15,35,.65);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.overlay.show{display:flex}
+.box{background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center}
+.bar{height:8px;background:#eef1f9;border-radius:6px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#4f6ef7,#8b5cf6);width:0;transition:width .3s}
+.toast{position:fixed;top:20px;right:20px;background:#fff;border-right:4px solid #4f6ef7;padding:12px 16px;border-radius:10px;box-shadow:0 6px 20px rgba(20,30,80,.15);font-size:13px;font-weight:600;z-index:200;max-width:340px;animation:sl .3s}
+.toast.ok{border-color:#30a46c}
+.toast.er{border-color:#e5484d}
+@keyframes sl{from{transform:translateX(120%)}to{transform:translateX(0)}}
+@media(max-width:600px){header{padding:10px}h1{font-size:14px}main{padding:10px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">C</div>
+  <div><h1>Contact Master Pro</h1><div style="font-size:11px;color:#6b7394" id="mode">جارٍ الفحص...</div></div>
+</header>
+<main>
+  <div class="card">
+    <h2>📱 قراءة جهات الاتصال من الجهاز</h2>
+    <p style="font-size:13px;color:#6b7394;margin-bottom:12px">
+      اقرأ كل جهات هاتفك دفعة واحدة بضغطة زر. سيُطلب إذن مرة واحدة فقط.
+    </p>
+    <button class="btn success" id="readBtn" disabled>📥 اقرأ كل جهات الاتصال</button>
+  </div>
+
+  <div class="card" id="pendingCard" style="display:none">
+    <h2>📋 للمراجعة <span class="badge" id="pendingCount">0</span></h2>
+    <div class="row">
+      <button class="btn primary" id="confirmBtn">✅ استيراد الكل</button>
+      <button class="btn danger" id="cancelBtn">✖️ إلغاء</button>
+    </div>
+    <div class="list" id="pendingList"></div>
+  </div>
+
+  <div class="card">
+    <h2>👥 جهات الاتصال <span class="badge" id="total">0</span></h2>
+    <div class="row">
+      <input type="text" id="search" placeholder="بحث..." style="flex:1;min-width:150px">
+      <select id="sort">
+        <option value="name">الاسم</option>
+        <option value="date">الأحدث</option>
+      </select>
+      <button class="btn danger" id="delSel">🗑️ حذف</button>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 إحصائيات</h2>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="card">
+    <h2>📤 تصدير</h2>
+    <div class="row">
+      <button class="btn primary" data-exp="vcf">VCF</button>
+      <button class="btn primary" data-exp="csv">CSV</button>
+      <button class="btn primary" data-exp="json">JSON</button>
+      <button class="btn danger" id="wipe">🗑️ حذف الكل</button>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="ov">
+  <div class="box">
+    <div style="font-size:42px">📱</div>
+    <div style="font-weight:800;font-size:16px;margin:8px 0" id="ovTitle">جارٍ القراءة</div>
+    <div style="font-size:13px;color:#6b7394" id="ovMsg"></div>
+    <div class="bar"><i id="ovBar"></i></div>
+    <div style="font-weight:700;color:#4f6ef7" id="ovCount">0</div>
+  </div>
+</div>
+
+<script>
+const S={contacts:[],pending:[],selected:new Set(),isNative:false,Cap:null};
+const $=id=>document.getElementById(id);
+const esc=s=>s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>'c_'+Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+
+function save(){localStorage.setItem('cm_c',JSON.stringify(S.contacts))}
+function load(){try{S.contacts=JSON.parse(localStorage.getItem('cm_c')||'[]')}catch(e){S.contacts=[]}}
+
+function toast(msg,type){const t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),4000)}
+
+async function loadCap(){
+  if(window.Capacitor&&window.Capacitor.Plugins){
+    S.isNative=true;
+    S.Cap=window.Capacitor.Plugins.Contacts;
+    return true;
+  }
+  return false;
+}
+
+function updateMode(){
+  $('mode').textContent=S.isNative?'✅ نسخة APK — قراءة كاملة':'⚠️ متصفح — استخدم نسخة APK';
+  $('readBtn').disabled=!S.isNative;
+}
+
+function showOv(t,m,c,p){
+  if(t===false){$('ov').classList.remove('show');return}
+  $('ovTitle').textContent=t;$('ovMsg').textContent=m||'';
+  $('ovCount').textContent=(c||0)+' جهة';
+  $('ovBar').style.width=(p||0)+'%';
+  $('ov').classList.add('show');
+}
+
+function mapNative(c){
+  const name=c.name&&c.name.display?c.name.display:(c.displayName||'');
+  const phones=Array.isArray(c.phones)?c.phones.map(p=>p.number).filter(Boolean):[];
+  const emails=Array.isArray(c.emails)?c.emails.map(e=>e.address).filter(Boolean):[];
+  const company=c.organization&&c.organization.name?c.organization.name:'';
+  const avatar=(c.image&&c.image.base64String)?'data:image/png;base64,'+c.image.base64String:'';
+  return {id:uid(),name,phones,emails,company,avatar,createdAt:Date.now()};
+}
+
+async function readAll(){
+  if(!S.Cap)throw new Error('Capacitor Contacts غير متاح');
+  showOv('جارٍ التحقق من الإذن','...',0,10);
+  let p=await S.Cap.checkPermissions();
+  if(p.contacts!=='granted'){
+    showOv('طلب الإذن','يُرجى الموافقة...',0,20);
+    p=await S.Cap.requestPermissions();
+  }
+  if(p.contacts!=='granted')throw new Error('تم رفض الإذن');
+  showOv('جارٍ القراءة','يتم سحب الجهات...',0,40);
+  const r=await S.Cap.getContacts({projection:{name:true,phones:true,emails:true,organization:true,image:true,note:true}});
+  showOv('معالجة','تم إيجاد '+r.contacts.length,r.contacts.length,80);
+  const m=r.contacts.map(mapNative);
+  showOv('انتهى','اكتملت القراءة',m.length,100);
+  await new Promise(x=>setTimeout(x,400));
+  showOv(false);
+  return m;
+}
+
+function renderPending(){
+  const p=S.pending;
+  $('pendingCard').style.display=p.length?'block':'none';
+  $('pendingCount').textContent=p.length;
+  $('pendingList').innerHTML=p.slice(0,100).map((c,i)=>`
+    <div class="item">
+      <div class="avatar">${c.avatar?'<img src="'+esc(c.avatar)+'">':esc((c.name||'?').charAt(0))}</div>
+      <div class="info"><div class="nm">${esc(c.name||'(بدون اسم)')}</div>
+      <div class="meta">${(c.phones||[]).slice(0,2).map(x=>'📞 '+esc(x)).join(' ')}</div></div>
+      <div class="acts"><button onclick="rmPend(${i})">✕</button></div>
+    </div>`).join('')+(p.length>100?`<div style="text-align:center;color:#6b7394;padding:8px">+${p.length-100} أخرى</div>`:'');
+}
+
+window.rmPend=function(i){S.pending.splice(i,1);renderPending()};
+
+function renderList(){
+  let l=S.contacts.slice();
+  const q=$('search').value.trim().toLowerCase();
+  if(q)l=l.filter(c=>[c.name,c.company,...(c.phones||[]),...(c.emails||[])].join(' ').toLowerCase().includes(q));
+  if($('sort').value==='name')l.sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
+  else l.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  $('total').textContent=S.contacts.length;
+  if(!l.length){$('list').innerHTML='<div class="empty"><div class="ic">📭</div><div>لا توجد جهات — اقرأ من الجهاز</div></div>';return}
+  $('list').innerHTML=l.slice(0,300).map(c=>{
+    const sel=S.selected.has(c.id);
+    return `<div class="item" data-id="${c.id}" style="${sel?'border-color:#4f6ef7;background:#e8ecfe':''}">
+      <input type="checkbox" ${sel?'checked':''} onchange="tog('${c.id}')" style="width:18px;height:18px">
+      <div class="avatar">${c.avatar?'<img src="'+esc(c.avatar)+'">':esc((c.name||'?').charAt(0))}</div>
+      <div class="info"><div class="nm">${esc(c.name||'(بدون اسم)')}</div>
+      <div class="meta">${(c.phones||[]).slice(0,1).map(x=>'📞 '+esc(x)).join(' ')} ${c.company?'🏢 '+esc(c.company):''}</div></div>
+      <div class="acts">
+        <button onclick="call('${c.id}')">📞</button>
+        <button onclick="del('${c.id}')">🗑️</button>
+      </div></div>`;
+  }).join('');
+}
+
+window.tog=id=>{S.selected.has(id)?S.selected.delete(id):S.selected.add(id);renderList()};
+window.call=id=>{const c=S.contacts.find(x=>x.id===id);if(c&&c.phones[0])window.location.href='tel:'+c.phones[0].replace(/[^\d+]/g,'')};
+window.del=id=>{if(!confirm('حذف هذه الجهة؟'))return;S.contacts=S.contacts.filter(x=>x.id!==id);save();renderList();renderStats()};
+
+function renderStats(){
+  const t=S.contacts.length;
+  const wp=S.contacts.filter(c=>(c.phones||[]).some(p=>p)).length;
+  const we=S.contacts.filter(c=>(c.emails||[]).some(e=>e)).length;
+  $('stats').innerHTML=`
+    <div class="stat p"><div style="font-size:12px;color:#6b7394">إجمالي</div><div class="n">${t}</div></div>
+    <div class="stat s"><div style="font-size:12px;color:#6b7394">بأرقام</div><div class="n">${wp}</div></div>
+    <div class="stat s"><div style="font-size:12px;color:#6b7394">ببريد</div><div class="n">${we}</div></div>`;
+}
+
+function confirmImport(){
+  let added=0,skip=0;
+  const existing=new Set(S.contacts.map(c=>(c.phones||[])[0]).filter(Boolean));
+  S.pending.forEach(c=>{
+    const k=(c.phones||[])[0];
+    if(k&&existing.has(k)){skip++;return}
+    S.contacts.push(c);
+    if(k)existing.add(k);
+    added++;
+  });
+  save();
+  S.pending=[];
+  renderPending();renderList();renderStats();
+  toast('تم استيراد '+added+(skip?' وتجاهل '+skip:''),'ok');
+}
+
+function exportAs(fmt){
+  const list=S.contacts;
+  if(!list.length){toast('لا توجد جهات','er');return}
+  const d=new Date().toISOString().slice(0,10);
+  let content='',type='text/plain',ext=fmt;
+  if(fmt==='json'){content=JSON.stringify(list,null,2);type='application/json'}
+  else if(fmt==='csv'){
+    const r=[['الاسم','الهاتف','البريد','الشركة']];
+    list.forEach(c=>r.push([c.name||'',(c.phones||[])[0]||'',(c.emails||[])[0]||'',c.company||'']));
+    content='\uFEFF'+r.map(x=>x.map(y=>'"'+String(y).replace(/"/g,'""')+'"').join(',')).join('\n');
+    type='text/csv';
+  } else if(fmt==='vcf'){
+    content=list.map(c=>{const L=['BEGIN:VCARD','VERSION:3.0'];if(c.name)L.push('FN:'+c.name);(c.phones||[]).forEach(p=>L.push('TEL:'+p));(c.emails||[]).forEach(e=>L.push('EMAIL:'+e));L.push('END:VCARD');return L.join('\n')}).join('\n');
+    type='text/vcard';
+  }
+  const b=new Blob([content],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download='contacts-'+d+'.'+ext;a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+  toast('تم تصدير '+list.length+' جهة','ok');
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  load();
+  await loadCap();
+  updateMode();
+  renderList();renderStats();renderPending();
+
+  $('readBtn').onclick=async()=>{
+    try{
+      const m=await readAll();
+      if(!m.length){toast('لا توجد جهات','er');return}
+      S.pending=m;
+      renderPending();
+      toast('قرأت '+m.length+' جهة — راجعها','ok');
+      $('pendingCard').scrollIntoView({behavior:'smooth'});
+    }catch(e){
+      showOv(false);
+      console.error(e);
+      toast('خطأ: '+(e.message||e),'er');
+    }
+  };
+  $('confirmBtn').onclick=confirmImport;
+  $('cancelBtn').onclick=()=>{S.pending=[];renderPending()};
+  $('search').oninput=renderList;
+  $('sort').onchange=renderList;
+  $('delSel').onclick=()=>{
+    if(!S.selected.size){toast('لم تحدد شيئًا','er');return}
+    if(!confirm('حذف '+S.selected.size+' جهة؟'))return;
+    S.contacts=S.contacts.filter(c=>!S.selected.has(c.id));
+    S.selected.clear();
+    save();renderList();renderStats();
+    toast('تم الحذف','ok');
+  };
+  $('wipe').onclick=()=>{
+    if(!confirm('حذف كل الجهات؟'))return;
+    if(!confirm('تأكيد أخير؟'))return;
+    S.contacts=[];save();renderList();renderStats();
+  };
+  document.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>exportAs(b.dataset.exp));
+
+  console.log('Contact Master Pro ready. Native:',S.isNative);
+});
+</script>
+</body>
+</html>
