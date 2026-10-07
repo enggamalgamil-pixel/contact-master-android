@@ -11,31 +11,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show environment
-        run: |
-          echo "=== Node version ==="
-          node -v
-          echo "=== NPM version ==="
-          npm -v
-          echo "=== Java version ==="
-          java -version
-          echo "=== Files ==="
-          ls -la
-          echo "=== www folder ==="
-          ls -la www
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: NPM init and install
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Init npm and install Capacitor
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/contacts
-          echo "=== Installed versions ==="
-          cat package.json
 
-      - name: NPM packages list
-        run: ls -la node_modules/@capacitor/ || echo "no @capacitor folder"
+      - name: Init Capacitor
+        run: |
+          npx cap init "Contact Master Pro" "com.contactmaster.pro" --web-dir=www
 
-      - name: Try cap init
-        run: npx cap init "Contact Master Pro" "com.contactmaster.pro" --web-dir=www
-
-      - name: Try cap add android
+      - name: Add Android platform
         run: npx cap add android
+
+      - name: Sync Android
+        run: npx cap sync android
+
+      - name: Fix gradlew permission
+        run: chmod +x android/gradlew
+
+      - name: Build APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contact-master-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn
