@@ -11,46 +11,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Check contacts versions
-        run: npm view @capacitor/contacts version
-
-      - name: Check capacitor versions
+      - name: Show environment
         run: |
-          npm view @capacitor/core version
-          npm view @capacitor/android version
-          npm view @capacitor/cli version
+          echo "=== Node version ==="
+          node -v
+          echo "=== NPM version ==="
+          npm -v
+          echo "=== Java version ==="
+          java -version
+          echo "=== Files ==="
+          ls -la
+          echo "=== www folder ==="
+          ls -la www
 
-      - name: Install Capacitor latest
+      - name: NPM init and install
         run: |
-          npm install @capacitor/core@latest
-          npm install @capacitor/cli@latest
-          npm install @capacitor/android@latest
-          npm install @capacitor/contacts@latest
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/contacts
+          echo "=== Installed versions ==="
+          cat package.json
 
-      - name: Add Android
+      - name: NPM packages list
+        run: ls -la node_modules/@capacitor/ || echo "no @capacitor folder"
+
+      - name: Try cap init
+        run: npx cap init "Contact Master Pro" "com.contactmaster.pro" --web-dir=www
+
+      - name: Try cap add android
         run: npx cap add android
-
-      - name: Sync Android
-        run: npx cap sync android
-
-      - name: Fix gradlew
-        run: chmod +x android/gradlew
-
-      - name: Build APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
-
-      - name: Upload APK
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: contact-master-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
