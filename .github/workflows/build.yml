@@ -5,33 +5,57 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+
+      - name: Verify Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la $ANDROID_HOME || echo "SDK not found"
+          ls -la $ANDROID_HOME/cmdline-tools || echo "cmdline-tools not found"
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p $ANDROID_HOME/licenses
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_HOME/licenses/android-sdk-license
+          echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/android-sdk-preview-license
+          echo "d975f751698a77b662f1254ddbeed3901e976f5a" > $ANDROID_HOME/licenses/intel-android-extra-license
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+
       - name: Show files
         run: ls -la && ls -la www
+
       - name: NPM install
         run: npm install --legacy-peer-deps
+
       - name: Capacitor add android
         run: npx cap add android
+
       - name: Capacitor sync
         run: npx cap sync android
+
       - name: Fix gradlew permission
         run: chmod +x android/gradlew
+
       - name: Build APK
         run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
+
       - name: Upload APK
         if: always()
         uses: actions/upload-artifact@v4
