@@ -20,11 +20,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Show available contacts versions
-        run: npm view @capacitor/contacts versions --json | tail -20
+      - name: Check contacts versions
+        run: npm view @capacitor/contacts version
 
-      - name: Show available capacitor versions
-        run: npm view @capacitor/core version
+      - name: Check capacitor versions
+        run: |
+          npm view @capacitor/core version
+          npm view @capacitor/android version
+          npm view @capacitor/cli version
 
       - name: Install Capacitor latest
         run: |
@@ -32,9 +35,6 @@ jobs:
           npm install @capacitor/cli@latest
           npm install @capacitor/android@latest
           npm install @capacitor/contacts@latest
-
-      - name: Show installed versions
-        run: cat package.json
 
       - name: Add Android
         run: npx cap add android
