@@ -23,14 +23,50 @@ jobs:
       - name: Init npm and install Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/contacts
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+
+      - name: Install contacts plugin
+        run: npm install @capacitor/contacts || echo "contacts plugin install attempted"
 
       - name: Init Capacitor
-        run: |
-          npx cap init "Contact Master Pro" "com.contactmaster.pro" --web-dir=www
+        run: npx cap init "Contact Master Pro" "com.contactmaster.pro" --web-dir=www
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Show Android files BEFORE patch
+        run: |
+          echo "===== variables.gradle ====="
+          cat android/variables.gradle
+          echo ""
+          echo "===== build.gradle (top 30 lines) ====="
+          head -30 android/build.gradle
+          echo ""
+          echo "===== gradle-wrapper.properties ====="
+          cat android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Patch Android project for newer SDK
+        run: |
+          cd android
+          # 1) Update compileSdk and targetSdk to 36
+          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' variables.gradle
+          sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' variables.gradle
+          
+          # 2) Downgrade AndroidX Core to version compatible with SDK 35/36
+          sed -i "s/androidxCoreVersion = .*/androidxCoreVersion = '1.15.0'/" variables.gradle
+          
+          # 3) Update Android Gradle Plugin to 8.9.1
+          sed -i "s|com.android.tools.build:gradle:.*'|com.android.tools.build:gradle:8.9.1'|" build.gradle
+          
+          # 4) Update Gradle wrapper to 8.11.1
+          sed -i 's|gradle-.*-all.zip|gradle-8.11.1-all.zip|' gradle/wrapper/gradle-wrapper.properties
+          
+          echo "===== AFTER PATCH ====="
+          cat variables.gradle
+          echo ""
+          head -30 build.gradle
+          echo ""
+          cat gradle/wrapper/gradle-wrapper.properties
 
       - name: Sync Android
         run: npx cap sync android
@@ -41,7 +77,7 @@ jobs:
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -100
 
       - name: Upload APK
         if: always()
