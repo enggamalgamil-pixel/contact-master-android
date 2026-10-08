@@ -26,10 +26,13 @@ jobs:
           npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
       - name: Install contacts plugin
-        run: npm install @capacitor/contacts || echo "contacts plugin install attempted"
+        run: npm install @capacitor/contacts
 
-      - name: Show Capacitor version
-        run: npx cap --version
+      - name: Verify contacts plugin
+        run: |
+          echo "=== Plugin installed? ==="
+          ls -la node_modules/@capacitor/contacts/ || echo "NOT FOUND"
+          cat package.json
 
       - name: Init Capacitor
         run: npx cap init "Contact Master Pro" "com.contactmaster.pro" --web-dir=www
@@ -37,18 +40,21 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Show Android files BEFORE patch
+      - name: Patch AndroidManifest to add READ_CONTACTS
         run: |
-          echo "===== variables.gradle ====="
-          cat android/variables.gradle
-          echo ""
-          echo "===== build.gradle (top 30) ====="
-          head -30 android/build.gradle
-          echo ""
-          echo "===== gradle-wrapper.properties ====="
-          cat android/gradle/wrapper/gradle-wrapper.properties
+          cd android/app/src/main
+          echo "===== BEFORE ====="
+          cat AndroidManifest.xml
+          
+          # إضافة صلاحية READ_CONTACTS إذا لم تكن موجودة
+          if ! grep -q "android.permission.READ_CONTACTS" AndroidManifest.xml; then
+            sed -i 's|<application|<uses-permission android:name="android.permission.READ_CONTACTS" />\n    <uses-permission android:name="android.permission.WRITE_CONTACTS" />\n    <uses-permission android:name="android.permission.GET_ACCOUNTS" />\n\n    <application|' AndroidManifest.xml
+          fi
+          
+          echo "===== AFTER ====="
+          cat AndroidManifest.xml
 
-      - name: Patch Android project for newer SDK
+      - name: Patch variables.gradle for newer SDK
         run: |
           cd android
           sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' variables.gradle
@@ -56,15 +62,16 @@ jobs:
           sed -i "s/androidxCoreVersion = .*/androidxCoreVersion = '1.15.0'/" variables.gradle
           sed -i "s|com.android.tools.build:gradle:.*'|com.android.tools.build:gradle:8.9.1'|" build.gradle
           sed -i 's|gradle-.*-all.zip|gradle-8.11.1-all.zip|' gradle/wrapper/gradle-wrapper.properties
-          echo "===== AFTER PATCH ====="
+          echo "===== variables.gradle ====="
           cat variables.gradle
-          echo ""
-          head -30 build.gradle
-          echo ""
-          cat gradle/wrapper/gradle-wrapper.properties
 
       - name: Sync Android
         run: npx cap sync android
+
+      - name: Show final manifest
+        run: |
+          echo "===== FINAL AndroidManifest ====="
+          cat android/app/src/main/AndroidManifest.xml
 
       - name: Fix gradlew permission
         run: chmod +x android/gradlew
@@ -78,6 +85,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: contact-master-apk
+          name: contact-master-apk-v2
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: warn
